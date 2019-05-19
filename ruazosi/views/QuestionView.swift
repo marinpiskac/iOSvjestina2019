@@ -10,7 +10,7 @@ import UIKit
 
 class QuestionView: UIView {
     @IBOutlet var contentView: UIView!
-    
+
     @IBOutlet weak var questionView: UILabel!
 
     @IBOutlet weak var answer1: UIButton!
@@ -19,29 +19,30 @@ class QuestionView: UIView {
     @IBOutlet weak var answer4: UIButton!
 
     var currentQuestion: Question?
-    
-    
+
+    var completion: ((Bool)->Void)?
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         commonInit()
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         commonInit()
     }
-    
+
     func commonInit() {
         Bundle.main.loadNibNamed("QuestionView", owner: self, options: nil)
         contentView.fixInView(self)
-        
     }
 
-    func setup(question: Question) {
+    func setup(question: Question, completion: @escaping (Bool)->Void) {
         self.currentQuestion = question
-        
+        self.completion = completion
+
         questionView?.text = question.question
-        
+
         if (question.answers.count != 4) {
             print("Error: invalid number of answers ")
             return
@@ -57,24 +58,26 @@ class QuestionView: UIView {
         answer3.addTarget(self, action: #selector(buttonClicked), for: .touchUpInside)
 
         answer4.setTitle(question.answers[3], for: .normal)
-        answer4.addTarget(self, action:  #selector(buttonClicked), for: .touchUpInside)
+        answer4.addTarget(self, action: #selector(buttonClicked), for: .touchUpInside)
     }
-    
-    @objc func buttonClicked(_ sender: UIButton?){
+
+    @objc func buttonClicked(_ sender: UIButton?) {
         guard let selectedAnswer = sender?.titleLabel?.text else { return }
-        
-        if (self.currentQuestion?.correctAnswer == self.currentQuestion?.answers.firstIndex(of: selectedAnswer)){
+
+        if (self.currentQuestion?.correctAnswer == self.currentQuestion?.answers.firstIndex(of: selectedAnswer)) {
             sender?.setTitleColor(UIColor.black, for: .normal)
             sender?.backgroundColor = UIColor.green
-        }else{
+            completion?(true)
+        } else {
             sender?.setTitleColor(UIColor.white, for: .normal)
             sender?.backgroundColor = UIColor.red
+            completion?(false)
         }
     }
 }
 
-extension UIView{
-    func fixInView(_ container: UIView!) -> Void{
+extension UIView {
+    func fixInView(_ container: UIView!) -> Void {
         self.translatesAutoresizingMaskIntoConstraints = false;
         self.frame = container.frame;
         container.addSubview(self);
