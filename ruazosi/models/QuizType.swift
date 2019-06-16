@@ -6,10 +6,10 @@
 import Foundation
 import UIKit
 
-enum QuizType {
-    case SPORTS
-    case SCIENCE
-    case UNKNOWN
+enum QuizType: String {
+    case SPORTS = "SPORTS"
+    case SCIENCE = "SCIENCE"
+    case UNKNOWN = "UNKNOWN"
 
     init(text: String) {
         switch (text) {

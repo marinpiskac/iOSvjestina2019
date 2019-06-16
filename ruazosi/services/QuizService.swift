@@ -29,8 +29,7 @@ class QuizService {
 
                     if let jsonDict = json as? Dictionary<String, Any>,
                        let quizzArray = jsonDict["quizzes"] as? [Any] {
-                        let mappedArray = quizzArray.compactMap { quizJson in Quiz(json: quizJson) }
-
+                        let mappedArray = quizzArray.compactMap { quizJson in Quiz.fromJson(json: quizJson) }
                         completion(mappedArray)
                     }
                 } catch {}
@@ -67,5 +66,31 @@ class QuizService {
             dataTask.resume()
         } catch {}
 
+    }
+
+    func getLeaderboard(quizId: Int, completion: @escaping ([QuizLeaderboardScore]) -> Void) {
+        guard let url = URL(string: "https://iosquiz.herokuapp.com/api/score?quiz_id=" + quizId.description) else { return }
+
+        var urlRequest = URLRequest(url: url)
+        urlRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        urlRequest.addValue(persistenceService.getAuthData()?.token ?? "", forHTTPHeaderField: "Authorization")
+
+        let dataTask = URLSession.shared.dataTask(with: urlRequest) { (data, response, error) in
+            if let data = data {
+                do {
+                    let json = try JSONSerialization.jsonObject(with: data, options: [])
+
+                    if let jsonArr = json as? [Any]{
+                        let mappedArray = jsonArr.compactMap { quizLeaderboardScoreJson in
+                            QuizLeaderboardScore(json: quizLeaderboardScoreJson)
+                        }
+
+                        completion(mappedArray)
+                    }
+                } catch {}
+            }
+        }
+
+        dataTask.resume()
     }
 }

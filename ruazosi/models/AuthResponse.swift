@@ -8,6 +8,7 @@ import Foundation
 class AuthDetails {
     let token: String
     let userId: Int
+    var username: String = ""
 
     init?(json: Any) {
         if let jsonDict = json as? Dictionary<String, Any>,
@@ -23,5 +24,11 @@ class AuthDetails {
     init(token: String, userId: Int){
         self.token = token
         self.userId = userId
+    }
+
+    init(token: String, userId: Int, username: String){
+        self.token = token
+        self.userId = userId
+        self.username = username
     }
 }

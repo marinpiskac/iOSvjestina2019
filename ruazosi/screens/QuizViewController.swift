@@ -53,7 +53,7 @@ class QuizViewController: UIViewController {
             let finishTime = Date()
             let totalQuizTime = finishTime.timeIntervalSince(startTime)
 
-            quizService?.sendResult(quizId: quiz.id, noOfCorrect: noOfCorrect, time: totalQuizTime) { successfullySent in
+            quizService?.sendResult(quizId: Int(quiz.id), noOfCorrect: noOfCorrect, time: totalQuizTime) { successfullySent in
                 DispatchQueue.main.async {
                     self.router?.popCurrentView()
                 }
@@ -64,11 +64,17 @@ class QuizViewController: UIViewController {
                             x: currentQuestion * Int(questionsScrollView.frame.width),
                             y: 0,
                             width: Int(questionsScrollView.frame.width),
-                            height: Int(questionsScrollView.contentSize.height)
+                            height: Int(questionsScrollView.frame.height)
                     ),
                     animated: true
             )
         }
+    }
+
+    @objc func onLeaderboardClicked() {
+        guard let quiz = quiz else { return }
+
+        router?.pushLeaderboardView(quizId: Int(quiz.id))
     }
 }
 
@@ -77,6 +83,11 @@ extension QuizViewController {
         guard let quiz = quiz else { return }
 
         self.view.backgroundColor = .white
+
+        let leaderboardButton = UIBarButtonItem(title: "Leaderboard", style: .plain, target: self, action: #selector(onLeaderboardClicked))
+
+        self.navigationItem.rightBarButtonItem = leaderboardButton
+        self.navigationItem.title = quiz.title
 
         quizName = UILabel()
         quizName.text = quiz.title
@@ -104,7 +115,7 @@ extension QuizViewController {
         quizName.autoPinEdge(.top, to: .top, of: self.view, withOffset: 100)
 
         quizImage.autoPinEdge(.top, to: .bottom, of: quizName, withOffset: 16)
-        quizImage.autoMatch(.height, to: .height, of: self.view, withMultiplier: 0.2)
+        quizImage.autoMatch(.height, to: .height, of: self.view, withMultiplier: 0.15)
         quizImage.autoPinEdge(toSuperviewEdge: .leading, withInset: 25)
         quizImage.autoPinEdge(toSuperviewEdge: .trailing, withInset: 25)
         quizImage.contentMode = .scaleAspectFit
@@ -117,20 +128,23 @@ extension QuizViewController {
         questionsScrollView.autoPinEdge(toSuperviewEdge: .leading, withInset: 8)
         questionsScrollView.autoPinEdge(toSuperviewEdge: .trailing, withInset: 8)
 
+
         self.view.layoutSubviews()
 
-        quiz.questions.enumerated().forEach { (index: Int, question: Question) in
+        let tabBarHeight = self.tabBarController?.tabBar.frame.height ?? 0
+
+        (quiz.questions.array as! [Question]).enumerated().forEach { (index: Int, question: Question) in
             let questionView = QuestionView()
             let itemWidth = Int(self.view.frame.width - CGFloat(16))
             questionView.frame = CGRect(
                     x: itemWidth * index,
                     y: 0,
                     width: itemWidth,
-                    height: Int(questionsScrollView.frame.height))
+                    height: Int(self.questionsScrollView.frame.height - tabBarHeight))
             questionView.setup(question: question, completion: { correct in
                 self.questionAnswered(correct)
             })
-            questionsScrollView.addSubview(questionView)
+            self.questionsScrollView.addSubview(questionView)
         }
         questionsScrollView.contentSize = CGSize(
                 width: (self.view.frame.width - CGFloat(16)) * CGFloat(quiz.questions.count),

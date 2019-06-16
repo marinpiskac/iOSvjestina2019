@@ -22,6 +22,7 @@ class AuthService {
                 do {
                     let json = try JSONSerialization.jsonObject(with: data, options: [])
                     if let authDetails = AuthDetails(json: json){
+                        authDetails.username = username ?? ""
                         self.persistenceService.saveAuthData(authDetails)
                         completion(true)
                     }else{

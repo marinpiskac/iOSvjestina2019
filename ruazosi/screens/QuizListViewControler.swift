@@ -33,6 +33,7 @@ class QuizListViewControler: UIViewController {
         super.viewDidLoad()
         quizTableView.dataSource = self
         quizTableView.delegate = self
+        self.navigationItem.title = "Quiz list"
 
         quizTableView.register(UINib(nibName: "QuizTableViewCell", bundle: nil), forCellReuseIdentifier: "quizTableCell")
     }
@@ -40,7 +41,7 @@ class QuizListViewControler: UIViewController {
     @IBAction func onFetchButtonClick(_ sender: UIButton) {
         quizService?.fetchQuizzes() { quizzes in
             let brojPitanjaNBA = quizzes
-                    .flatMap { quiz in quiz.questions }
+                    .flatMap { quiz -> [Question] in quiz.questions.array as! [Question] }
                     .filter { question in question.question.contains("NBA") }
                     .count
 
@@ -50,15 +51,16 @@ class QuizListViewControler: UIViewController {
                     + " se spominje NBA"
 
             let quizzMap = quizzes.reduce(into: [:]) { (result: inout [QuizType: [Quiz]], quiz: Quiz) in
-                if (result.keys.contains(quiz.category)) {
-                    result[quiz.category]?.append(quiz)
+                if (result.keys.contains(quiz.enumCategory)) {
+                    result[quiz.enumCategory]?.append(quiz)
                 } else {
-                    result.updateValue([quiz], forKey: quiz.category)
+                    result.updateValue([quiz], forKey: quiz.enumCategory)
                 }
             }
 
             DispatchQueue.main.async {
                 self.quizzes = quizzMap
+                DataController.shared.saveContext()
                 self.funFactLabel.text = funFactText
                 self.quizTableView.reloadData()
                 self.errorLabel.isHidden = true
@@ -82,11 +84,11 @@ extension QuizListViewControler: UITableViewDataSource, UITableViewDelegate {
         let quiz = quizzes[Array(quizzes.keys)[indexPath.section]]![indexPath.row]
 
         cell.titleLabel?.text = quiz.title
-        cell.descriptionLabel?.text = quiz.description
+        cell.descriptionLabel?.text = quiz.quizDescription
         if let image = quiz.image {
             cell.quizImage?.kf.setImage(with: URL(string: image))
         }
-        cell.backgroundColor = quiz.category.color
+        cell.backgroundColor = quiz.enumCategory.color
 
         return cell
     }

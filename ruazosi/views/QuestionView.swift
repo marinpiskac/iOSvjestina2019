@@ -64,7 +64,7 @@ class QuestionView: UIView {
     @objc func buttonClicked(_ sender: UIButton?) {
         guard let selectedAnswer = sender?.titleLabel?.text else { return }
 
-        if (self.currentQuestion?.correctAnswer == self.currentQuestion?.answers.firstIndex(of: selectedAnswer)) {
+        if (Int(self.currentQuestion?.correctAnswer ?? -1) == self.currentQuestion?.answers.firstIndex(of: selectedAnswer)) {
             sender?.setTitleColor(UIColor.black, for: .normal)
             sender?.backgroundColor = UIColor.green
             completion?(true)
